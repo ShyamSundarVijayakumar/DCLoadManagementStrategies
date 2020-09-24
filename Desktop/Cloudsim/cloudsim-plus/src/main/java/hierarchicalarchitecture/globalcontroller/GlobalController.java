@@ -25,7 +25,15 @@ import hierarchicalarchitecture.localcontrollerdaas.LocalControllerDaas;
 import hierarchicalarchitecture.localcontrollerwebapp.LocalControllerWA;
 
 /**
- * This class is dedicated for designing the feature of global controller
+ * This class is dedicated for designing the feature of global controller. The global controller has Request analyser and configuration manager(RACM), 
+ * VM dispacher, Global decision maker, global utilization computational unit(GUCU).
+ * 
+ * The user requests are converted in VM configurations by the RACM module. The RACM sends those VM configurations to the VM dispacher unit, which then
+ * seperates those configs according to the application type and dispaches them to their respective local controller. For instance, the VM's belonging to
+ * the DaaS application will be given to the local controller DaaS.
+ * 
+ * The global decision maker component will make use of the GUCU to make decisions such as aggressive consolidation, consolidation without adding additional
+ * host and adding additional hosts.  
  * 
  * @param vmListWebApplication
  * @param SCHEDULING_INTERVAL
@@ -236,7 +244,7 @@ public class GlobalController {
 	}
 
 	/** 
-	 * This method gets the virtual machines that are created initially during the start of the simulation for the webapplication.
+	 * This method gets the virtual machines that are created initially during the start of the simulation for the web application.
 	 * @return {@link #InitialvmListWebApplication}
 	 * @see #modelUserRequests(CloudSim) for vm creation
 	 */
@@ -408,7 +416,7 @@ public class GlobalController {
 				&& (!onlyOneHostHasVmsAndIsUnderLoaded(LocalController.hostListDaas,
 						LocalController.UnderLoadedHostssetDaas))) {
 			ConsolidationWithoutAdditionalHosts = ConsolidationWithoutAdditionalhosts(LocalController);
-			// System.out.println("Test Check 5---------->" );
+		
 		}
 		
 		boolean AllocatedWithAdditionalHosts = false;
@@ -416,14 +424,13 @@ public class GlobalController {
 				&& ((AggressiveConsolidation == false) && (ConsolidationWithoutAdditionalHosts == false))
 				&& (!LocalController.OverLoadedHostssetDaas.isEmpty())) {
 			AllocatedWithAdditionalHosts = AddAdditionalhost(LocalController);
-			// System.out.println("Test Check 6---------->" );
+			
 		}
 	
 		if ((!onlyOneHostHasVmsAndIsUnderLoaded(LocalController.hostListDaas, LocalController.UnderLoadedHostssetDaas))
 				&& ((AggressiveConsolidation == false) && (ConsolidationWithoutAdditionalHosts == false) && (AllocatedWithAdditionalHosts == false))) {
-			//	&& (!LocalController.OverLoadedHostssetDaas.isEmpty())) {
 			LocalController.setPreviousMapAsCurrentMap();
-//			 System.out.println("Test Check: No case is suitable in GC---------->" );
+
 		}
 	
 	}
@@ -512,6 +519,8 @@ public class GlobalController {
 	}
 
 	/**
+	 * Without adding additional hosts, the hosts are brought back to the normal state, if the resources are enough.
+	 * 
 	 * @param LocalController
 	 * @return
 	 */
@@ -691,8 +700,15 @@ public class GlobalController {
 		return BestMinUtilHost;
 	}
 
+	/**
+	 * This method estimates the free resources that are available in the provided hostlist. It returns the counted number, that tells the hostlist has
+	 * approximately enough resources for that number of vm's considering the custom vm size.
+	 * 
+	 * @param Hostlist
+	 * @param VmstoMigrate
+	 * @return
+	 */
 	private double calculateAvailableFreeResourceWA(List<Host> Hostlist, List<Vm> VmstoMigrate){
-		double TotalVMs = VmstoMigrate.size();
 		double highestRam = 0;
 		double prevRam = 0;
 		for(Vm vm : InitialvmListWebApplication) {
@@ -711,7 +727,7 @@ public class GlobalController {
 			double TotalUsedRam = 0;
 			double TotalRam = 0;
 			double HostUsedMips = 0.0;
-			double hostRam = host.getRam().getCapacity();
+
 			for (Vm vm : host.getVmList()) {
 				HostUsedMips += vm.getTotalMipsCapacity();
 				TotalUsedRam += vm.getRam().getCapacity();
@@ -735,8 +751,16 @@ public class GlobalController {
 		return counter;
 	}
 	
+	/**
+	 * This method estimates the free resources that are available in the provided hostlist. It returns the counted number, that tells the hostlist has
+	 * approximately enough resources for that number of vm's considering the custom vm size.
+	 * 
+	 * @param Hostlist
+	 * @param VmstoMigrate
+	 * @return
+	 */
 	private double calculateAvailableFreeResourceDAAS(List<Host> Hostlist, List<Vm> VmstoMigrate){
-		double TotalVMs = VmstoMigrate.size();
+
 		double highestRam = 0;
 		double prevRam = 0;
 		for(Vm vm : InitialvmListDaas) {
@@ -756,7 +780,7 @@ public class GlobalController {
 			double TotalUsedRam = 0;
 			double TotalRam = 0;
 			double HostUsedMips = 0.0;
-			double hostRam = host.getRam().getCapacity();
+
 			for (Vm vm : host.getVmList()) {
 				HostUsedMips += vm.getTotalMipsCapacity();
 				TotalUsedRam += vm.getRam().getCapacity();
@@ -801,92 +825,7 @@ public class GlobalController {
 
 
 	/**
-	 * @param Vmlist
-	 * @return
-	 */
-	private double TotalMipsRequired(List<Vm> Vmlist) {
-		double TotalCpuMipsRequired = 0;
-		for (Vm vm : Vmlist) {
-			TotalCpuMipsRequired += vm.getTotalMipsCapacity();// vm.getMips();
-		}
-		return TotalCpuMipsRequired;
-	}
-
-	/**
-	 * @param Vmlist
-	 * @return
-	 */
-	private double TotalRamRequired(List<Vm> Vmlist) {
-		double TotalRamRequired = 0;
-		for (Vm vm : Vmlist) {
-			TotalRamRequired += vm.getRam().getCapacity();
-		}
-		return TotalRamRequired;
-	}
-
-	/**
-	 * @param Vmlist
-	 * @return
-	 */
-	private double TotalBwRequired(List<Vm> Vmlist) {
-		double TotalBWRequired = 0;
-		for (Vm vm : Vmlist) {
-			TotalBWRequired += vm.getBw().getCapacity();
-		}
-		return TotalBWRequired;
-	}
-
-	/**
-	 * @param Hostlist
-	 * @return
-	 */
-	private double TotalFreeMips(List<Host> Hostlist) {
-
-		double HostUsedMips = 0.0;
-		double hostFreemips = 0;
-		double hosttotalresource = 0;
-		for (Host host : Hostlist) {
-			for (Vm vm : host.getVmList()) {
-				HostUsedMips += vm.getTotalMipsCapacity();		
-			}
-			hosttotalresource += host.getTotalMipsCapacity();
-		}
-		hostFreemips = hosttotalresource - HostUsedMips;
-		return hostFreemips;
-	}
-
-	/**
-	 * @param Hostlist
-	 * @return
-	 */
-	private double TotalFreeRam(List<Host> Hostlist) {
-		double TotalUsedRam = 0;
-		double TotalRam = 0;
-		for (Host host : Hostlist) {
-			for (Vm vm : host.getVmList()) {
-				TotalUsedRam += vm.getRam().getCapacity();
-			}
-			TotalRam += host.getRam().getCapacity();
-		}
-		double freeRam = TotalRam - TotalUsedRam;
-		return freeRam;
-	}
-
-	
-	/**
-	 * @param Hostlist
-	 * @return
-	 */
-	private double TotalFreeBw(List<Host> Hostlist) {
-		double TotalFreeBW = 0;
-		for (Host host : Hostlist) {
-			TotalFreeBW += host.getBw().getAvailableResource();
-		}
-		return TotalFreeBW;
-	}
-
-	/**
-	 * This method helps maintain the load balanced in Web application setup by taking decisions such as aggressive consolidation, consolidation without adding any 
+	 * This method helps maintain to balance load in Web application setup by taking decisions such as aggressive consolidation, consolidation without adding any 
 	 * additional hosts, adding additional hosts. 
 	 * 
 	 * @param LocalController
@@ -945,7 +884,7 @@ public class GlobalController {
 	 * operational hosts. when the required resources by all those vm's are less than the free resources in all the operational hosts then aggresiive 
 	 * cosolidation case a will take place. This process also takes into consideration of the vm's from overloaded and underloaded hosts and tries to alter its placement 
 	 * by choosing the target host appropriately.
-	 * The other case works the same way like it tries to fit in all the vm's from overloaded hosts and underloaded hosts in other operational hosts. 
+	 * The other case works the same way, it tries to fit in all the vm's from overloaded hosts and underloaded hosts in other operational hosts. 
 	 * When there are enough resources available then it approves the decision and passes its decision on to the local controller for implemetation. 
 	 *  
 	 * @param LocalController
@@ -1031,6 +970,8 @@ public class GlobalController {
 	}
 
 	/**
+	 * Without adding additional hosts, the hosts are brought back to the normal state, if the resources are enough.
+	 * 
 	 * @param LocalController
 	 * @return
 	 */
