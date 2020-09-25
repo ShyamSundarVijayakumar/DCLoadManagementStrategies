@@ -13,11 +13,10 @@ import org.cloudbus.cloudsim.datacenters.DatacenterSimple;
 import org.cloudbus.cloudsim.hosts.Host;
 import org.cloudbus.cloudsim.vms.Vm;
 
-
-
 /**
+ * This class is dedicate to calculate global utilization of all active hosts.
+ * 
  * @author Shyam Sundar V
- *
  */
 public class GlobalUtilizationComputation {
 	DatacenterSimple DC;
@@ -26,6 +25,7 @@ public class GlobalUtilizationComputation {
 	double serverUsage;
 	public Map<Long, Double> serverUtil;
 	public List<Host> hostList = new LinkedList<>();
+	
 	/**
 	 * @param args
 	 */
