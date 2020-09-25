@@ -1,6 +1,3 @@
-/**
- * 
- */
 package hierarchicalarchitecture.globalcontroller;
 
 import java.util.ArrayList;
@@ -14,7 +11,9 @@ import org.cloudbus.cloudsim.hosts.Host;
 import org.cloudbus.cloudsim.vms.Vm;
 
 /**
- * This class is dedicate to calculate global utilization of all active hosts.
+ * This class is dedicate to calculate global utilization of all active hosts at any time interval. 
+ * Here the host utilization is calculated by taking the average utilization of ram and cpu and the overall utilization is calculated based on the
+ * sum of all host's utilization to the number of active hosts.
  * 
  * @author Shyam Sundar V
  */
@@ -34,6 +33,12 @@ public class GlobalUtilizationComputation {
 		new GlobalUtilizationComputation();
 	}
 
+	/**
+	 * @param NewServerwithVmlist
+	 * @param Hostlist
+	 * @param Vmlist
+	 * @return
+	 */
 	public double GlobalUtilizationForNewPlacement(Map<Long, ArrayList<Long>> NewServerwithVmlist, List<Host> Hostlist,List<Vm> Vmlist) {
 		serverUsage = 0;
 		serverUtil = new HashMap<Long, Double>();
@@ -60,16 +65,25 @@ public class GlobalUtilizationComputation {
 	}
 	
 	
+	/**
+	 * @param HostList
+	 */
 	public void SetHostlist(List<Host> HostList) {
 		this.hostList = HostList;
 	}
 	
+	/**
+	 * @return
+	 */
 	public double GetGlobalUtilizationBasedOnCPUAndRAM() {
 		double GlobalRamAndCPUUtilization = GetGlobalRamAndCPUUtilization();
 		double GlobalUtilization=((GlobalRamAndCPUUtilization) / getNumberOfActiveHosts(hostList));
 		return GlobalUtilization;
 	}
 	
+	/**
+	 * @return
+	 */
 	private double GetGlobalRamAndCPUUtilization(){
 		double GlobalUtilization = 0.0;	
 		double HostUtilization = 0.0;
@@ -106,6 +120,9 @@ public class GlobalUtilizationComputation {
 		return GlobalUtilization;
 	}
 	
+	/**
+	 * @return
+	 */
 	public double GetGlobalCpuUtilizationPercentage() {
 		double GlobalCpuUtilizationPercentage = GetGlobalCpuUtilization() / getNumberOfActiveHosts(hostList);
 		return GlobalCpuUtilizationPercentage;
@@ -116,6 +133,9 @@ public class GlobalUtilizationComputation {
 		return GlobalRamUtilizationPercentage;
 	}
 	
+	/**
+	 * @return
+	 */
 	private double GetGlobalCpuUtilization(){
 		double GlobalCpuUtilization = 0.0;
 		for(Host host : hostList){
@@ -127,6 +147,9 @@ public class GlobalUtilizationComputation {
 	}
 	
 	
+	/**
+	 * @return
+	 */
 	private double GetGlobalRamUtilization(){
 		double GlobalRamUtilization = 0.0;
 		for(Host host : hostList){
@@ -146,7 +169,11 @@ public class GlobalUtilizationComputation {
 	}
 	
 	
-	private int  getNumberOfActiveHosts(List<Host> hostList){
+	/**
+	 * @param hostList
+	 * @return
+	 */
+	private int getNumberOfActiveHosts(List<Host> hostList){
 		int NumberofActiveHosts = 0;
 		for(Host host : hostList){
 			if(!host.getVmList().isEmpty()){
