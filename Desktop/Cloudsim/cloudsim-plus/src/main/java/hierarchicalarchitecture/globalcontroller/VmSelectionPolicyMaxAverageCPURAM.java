@@ -19,8 +19,14 @@ import org.cloudbus.cloudsim.util.MathUtil;
 import org.cloudbus.cloudsim.vms.Vm;
 
 /**
+ * This class is dedicated for creating a custom vm selection policy based on a host's cpu and ram relative utilization. 
+ * In the case of underloaded hosts, all the VM’s from that host will be added to the {@param VmsToMigrate}.
+ * 
+ * For the overloaded hosts, initially, the host is checked if it is violated because of ram or CPU. For instance when the host is violated 
+ * because of its high ram demand, then the previous 5-time interval ram utilization values are observed. The VM with the high average ram utilization
+ * value is chosen to be migrated.
+ * 
  * @author Shyam Sundar V
- *
  */
 public class VmSelectionPolicyMaxAverageCPURAM {
 	public List<Vm> VmsToMigrate = new ArrayList<Vm>();
