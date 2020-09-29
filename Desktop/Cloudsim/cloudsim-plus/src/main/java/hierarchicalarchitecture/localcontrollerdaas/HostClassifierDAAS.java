@@ -1,6 +1,3 @@
-/**
- * 
- */
 package hierarchicalarchitecture.localcontrollerdaas;
 
 import static java.util.stream.Collectors.toSet;
@@ -11,14 +8,12 @@ import org.cloudbus.cloudsim.hosts.Host;
 import org.cloudbus.cloudsim.vms.Vm;
 
 /**
+ * This class is dedicated for bringing in the host classifier module functionality.
  * @author Shyam Sundar V
- *
  */
 public class HostClassifierDAAS {
-
 	private double HostUpperUtilizationThreshold = 0.0;
 	private double HostLowerUtilizationThreshold = 0.0;
-	
 	
 	public void SetHostUpperAndLowerUtilizationThreshold(double UpperThreshold, double LowerThreshold) {
 	   this.HostUpperUtilizationThreshold = UpperThreshold;
@@ -36,21 +31,12 @@ public class HostClassifierDAAS {
      * @return the over utilized hosts
      */
    public Set<Host> getOverloadedHosts(List<Host> hostListToClassify) {
-        return hostListToClassify.stream()//.filter(host -> host.getDescription() == description)
+        return hostListToClassify.stream()
             .filter(this::isHostOverloaded)
             .filter(host -> host.getVmsMigratingOut().isEmpty())
             .collect(toSet());
     }	
 	
-   
-   /*public void SetDatacenter(DatacenterSimple  Datacenter) {
-	   this.DC = Datacenter;	   
-   }
-	
-   private List<Host> getHostList(){
-	   this.hostList = DC.getHostList();
-	   return this.hostList;
-   }*/
    /**
     * {@inheritDoc}
     * It's based on current CPU usage.
@@ -58,11 +44,9 @@ public class HostClassifierDAAS {
     * @param host {@inheritDoc}
     * @return {@inheritDoc}
     */
-   
    private boolean isHostOverloaded(final Host host) {
        return isHostOverloaded(host, host.getCpuPercentUtilization());
    }
-   
    
    /**
     * Checks if a Host is overloaded based on the given CPU utilization percent.
@@ -83,16 +67,15 @@ public class HostClassifierDAAS {
    private boolean isHostOverloaded(final Host host, final double cpuUsagePercent){
    	double OverUtilizationThreshold = this.HostUpperUtilizationThreshold;
    	double HostCapacity = host.getRam().getCapacity();
-   	double RamUtilisation = 0;// = host.getRamUtilization();
- //  	double ramAllocated = 0;
+   	double RamUtilisation = 0;
    	for(Vm vm: host.getVmList()) { 
-  // 		ramAllocated += vm.getRam().getCapacity();
    		RamUtilisation += vm.getRam().getAllocatedResource(); // This method gives the current requested Ram not allocated.
    	}
    	double RamUtilisationPercentage = RamUtilisation/HostCapacity;
-if((cpuUsagePercent == 100) || (RamUtilisationPercentage == 100)) {
-	System.out.println("Host CPU or ram has reached 100% utilization"+ host.getId());
-}
+   	
+   	if((cpuUsagePercent == 100) || (RamUtilisationPercentage == 100)) {
+   		System.out.println("Host CPU or ram has reached 100% utilization"+ host.getId());
+   	}
    	return ((cpuUsagePercent > OverUtilizationThreshold) || (RamUtilisationPercentage > OverUtilizationThreshold));
    }
  
@@ -112,15 +95,13 @@ if((cpuUsagePercent == 100) || (RamUtilisationPercentage == 100)) {
      */
    
     public Set<Host> getUnderLoadedHosts(List<Host> hostListToClassify) {
-        return hostListToClassify.stream()//.filter(host -> host.getDescription() == description)
+        return hostListToClassify.stream()
         		.filter(Host -> !isHostOverloaded(Host, Host.getCpuPercentUtilization()))
-       // 		.filter(host -> host.getVmsMigratingOut().isEmpty())
         		.filter(host -> host.getVmsMigratingIn().isEmpty())
                 .filter(this::notAllVmsAreMigratingOut)
         		.filter(Host ->isHostUnderloaded(Host))
         		.collect(toSet());
     }
-	
 	
 	/**
      * Checks if a host is under utilized, based on current CPU usage.
@@ -128,21 +109,17 @@ if((cpuUsagePercent == 100) || (RamUtilisationPercentage == 100)) {
      * @param host the host
      * @return true, if the host is under utilized; false otherwise
      */
-
     private boolean isHostUnderloaded(final Host host) {   
     	double UnderUtilizationThreshold = HostLowerUtilizationThreshold;
-    	double CpuUtilisationPercentage=getHostCpuPercentRequested(host);//host.getCpuPercentUtilization();
+    	double CpuUtilisationPercentage=getHostCpuPercentRequested(host);
     	double HostCapacity=host.getRam().getCapacity();
-       	double RamUtilisation = 0;// = host.getRamUtilization();
-      // 	double ramAllocated = 0.00;
+       	double RamUtilisation = 0;
        	for(Vm vm: host.getVmList()) { 
-     //  		ramAllocated += vm.getRam().getCapacity();
        		RamUtilisation += vm.getRam().getAllocatedResource(); // This method gives the current requested Ram not allocated.
        	}
        	double RamUtilisationPercentage = RamUtilisation/HostCapacity;
- 
-    return ((CpuUtilisationPercentage < UnderUtilizationThreshold) || (RamUtilisationPercentage < UnderUtilizationThreshold));
-   
+
+       	return ((CpuUtilisationPercentage < UnderUtilizationThreshold) || (RamUtilisationPercentage < UnderUtilizationThreshold));
     }
     
     private double getHostCpuPercentRequested(final Host host) {
