@@ -1,6 +1,3 @@
-/**
- * 
- */
 package hierarchicalarchitecture.localcontrollerdaas;
 
 import java.util.ArrayList;
@@ -16,13 +13,13 @@ import org.cloudbus.cloudsim.vms.Vm;
 import hierarchicalarchitecture.globalcontroller.GlobalController;
 
 /**
+ * This class acts as a driver class for the genetic algorithm in DaaS application.
  * @author Shyam Sundar V
- *
  */
 public class GADriverDaas {
 
 	/*
-	 * In chromosome, each each VM is associated with the host Id.
+	 * In chromosome, each VM is associated with the host Id.
 	 * Initially, The population is generated with random ids, which represent host ids.
 	 * This length represents the number of hosts in the given datacenter. 
 	 */
@@ -59,8 +56,10 @@ public class GADriverDaas {
 	PopulationDAAS generatePopulation;
 	public static int hostlist_Size;
 	public static int vmlist_Size;
-	 /* Constructor for initial VM Allocation */
-	 
+	DynamicPopulationDAAS bestPopulation = new DynamicPopulationDAAS(Dynamic_GENERATIONS); 	
+	public boolean GAChooseSourceMap;
+	
+	 /* Constructor for initial VM Allocation */ 
 	public void GAInitialplacement() {
 		
 		List<Host> hostListDaas = ModelConstructionForApplications.CreateDatacenter.getHostsListDaaS();
@@ -84,9 +83,8 @@ public class GADriverDaas {
 			}
 				
 			/* select best individual to place a given vm */
-	//		bestFinalDaas = new ChromosomeDAAS(VM_List.size());
 			for(int i=0; i<populationDAAS.getChromosomes().length;i++) {
-				if((populationDAAS.getChromosomes()[i].SLA_VIOLATIONS_IN_CHROMOSOME == 0) && (populationDAAS.getChromosomes()[i].TotalNoOfMigrations==0)
+				if((populationDAAS.getChromosomes()[i].SLA_VIOLATIONS_IN_CHROMOSOME == 0) && (populationDAAS.getChromosomes()[i].TotalNoOfMigrations == 0)
 					&& (populationDAAS.getChromosomes()[i].ACTIVE_SERVERS != 0)) {
 					bestFinalDaas = populationDAAS.getChromosomes()[i];
 					break;
@@ -115,73 +113,65 @@ public class GADriverDaas {
 		}
 	}
 
-	
 	public	Map<Integer, Integer> getvmToHostMapDaas(){
 		return vmToHostMapDaas;
 	}
-		
-	public boolean GAChooseSourceMap;
-	 /**
+	
+	/**
 	  * Constructor for Dynamic VM Allocation
 	  * @param sourceAllocationMap
 	  * @param vmCurrentCpuChar
 	  * @param vmCurrentRAMChar
-	  */
-	DynamicPopulationDAAS bestPopulation = new DynamicPopulationDAAS(Dynamic_GENERATIONS); 
-	 public Map<Long, Long> DynamicGeneticAlgorithmDriverDaas(Map<Long,Long> sourceAllocationMap, List<Long> targetHostsList, List<Host> hostList, List<Vm> vmList ) {
-		 dynamicVmHostMap = sourceAllocationMap;
-		 sourcevmList = new ArrayList<Long>(sourceAllocationMap.keySet());
-		 sourcehostList = new ArrayList<Long>(sourceAllocationMap.values());
-		 GAChooseSourceMap = false;
-		 targetHostList = new ArrayList<Long>(targetHostsList);
-		 hostListDAAS = hostList;
-		 vmListDAAS = vmList;
-		 DynamicEvolutionDAAS gen = new DynamicEvolutionDAAS();
-		 initialPopulation = new DynamicPopulationDAAS(Dynamic_POPULATION_SIZE).intialize(Dynamic_POPULATION_SIZE);
+	  */ 
+	public Map<Long, Long> DynamicGeneticAlgorithmDriverDaas(Map<Long,Long> sourceAllocationMap, List<Long> targetHostsList, List<Host> hostList, List<Vm> vmList ) {
+		dynamicVmHostMap = sourceAllocationMap;
+		sourcevmList = new ArrayList<Long>(sourceAllocationMap.keySet());
+		sourcehostList = new ArrayList<Long>(sourceAllocationMap.values());
+		GAChooseSourceMap = false;
+		targetHostList = new ArrayList<Long>(targetHostsList);
+		hostListDAAS = hostList;
+		vmListDAAS = vmList;
+		DynamicEvolutionDAAS gen = new DynamicEvolutionDAAS();
+		initialPopulation = new DynamicPopulationDAAS(Dynamic_POPULATION_SIZE).intialize(Dynamic_POPULATION_SIZE);
 	
-		 int generationNumber = 0;
-		 while(generationNumber <= Dynamic_GENERATIONS) {
-			 generationNumber++;
-			 DynamicPopulationDAAS population = gen.evolve(initialPopulation);
-			 population.sortChromosomesByFitness();
+		int generationNumber = 0;
+		while(generationNumber <= Dynamic_GENERATIONS) {
+			generationNumber++;
+			DynamicPopulationDAAS population = gen.evolve(initialPopulation);
+			population.sortChromosomesByFitness();
 			 
-			 /* remove old population and add offspring to the new population. */
+			/* remove old population and add offspring to the new population. */
 			 
-			 initialPopulation = new DynamicPopulationDAAS(Dynamic_POPULATION_SIZE);
+			initialPopulation = new DynamicPopulationDAAS(Dynamic_POPULATION_SIZE);
 	
-			 IntStream.range(0, population.chromosomes.size()).forEach(i ->
-			 initialPopulation.chromosomes.add(i, population.chromosomes.get(i)));		
-				
-				
+			IntStream.range(0, population.chromosomes.size()).forEach(i ->
+			initialPopulation.chromosomes.add(i, population.chromosomes.get(i)));		
+					
 			 /* select best individual to place the selected vms from the overloaded/underloaded hosts */
-				Exit: 
-			 for(int i=0 ; i < population.chromosomes.size(); i++) {
-				 if(population.getChromosomes().get(i).SLA_VIOLATIONS_IN_CHROMOSOME == 0) {
-					 bestPopulation.getChromosomes().add(population.getChromosomes().get(i));
-					 //		 bestFinalDynamic = population.getChromosomes().get(i);	 
-					 //		 serverVmMapDynamic = bestFinalDynamic.getServerwithVMList();
-					 //		 bestDynamicVmServerMap = bestFinalDynamic.getGenes();
-					 break Exit;
-				 }
-			 }
-			 Here:
-				 if((bestPopulation.chromosomes.isEmpty())  && (Dynamic_GENERATIONS == generationNumber)) {
-					 if(Dynamic_GENERATIONS >= 80) {
-						 bestDynamicVmServerMap = sourceAllocationMap;
-						 GAChooseSourceMap = true;
-						 break Here;
-					 }
-					 Dynamic_GENERATIONS += 10; 
-				 }
-		 }
-		 if((!bestPopulation.chromosomes.isEmpty())) {
-			 bestPopulation.sortChromosomesByFitness();
-			 bestDynamicVmServerMap = bestPopulation.getChromosomes().get(0).getGenes();
-			 serverVmMapDynamic = bestPopulation.getChromosomes().get(0).getServerwithVMList();
-			 return bestDynamicVmServerMap;
-		 }else {
-			 return bestDynamicVmServerMap;
-		 }
-	 }
-	 
+			Exit: 
+				for(int i=0 ; i < population.chromosomes.size(); i++) {
+					if(population.getChromosomes().get(i).SLA_VIOLATIONS_IN_CHROMOSOME == 0) {
+						bestPopulation.getChromosomes().add(population.getChromosomes().get(i));
+						break Exit;
+					}
+				}
+			Here:
+				if((bestPopulation.chromosomes.isEmpty())  && (Dynamic_GENERATIONS == generationNumber)) {
+					if(Dynamic_GENERATIONS >= 80) {
+						bestDynamicVmServerMap = sourceAllocationMap;
+						GAChooseSourceMap = true;
+						break Here;
+					}
+					Dynamic_GENERATIONS += 10; 
+				}
+		}
+		if((!bestPopulation.chromosomes.isEmpty())) {
+			bestPopulation.sortChromosomesByFitness();
+			bestDynamicVmServerMap = bestPopulation.getChromosomes().get(0).getGenes();
+			serverVmMapDynamic = bestPopulation.getChromosomes().get(0).getServerwithVMList();
+			return bestDynamicVmServerMap;
+		}else {
+			return bestDynamicVmServerMap;
+		}
+	}
 }
