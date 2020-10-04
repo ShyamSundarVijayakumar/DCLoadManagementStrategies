@@ -11,7 +11,7 @@
      
      - To change different workload's from planet lab for each simulation run, change the workload directory in **[RequestAnalyserAndConfigurationManagerWebApplication.java](https://github.com/ShyamSundarVijayakumar/DCLoadManagementStrategies/blob/master/Desktop/Cloudsim/cloudsim-plus/src/main/java/hierarchicalarchitecture/globalcontroller/RequestAnalyserAndConfigurationManagerWebApplication.java)** for hierarchical architecture and in **[RequestAnalyserAndConfigurationManagerWebApplication.java](https://github.com/ShyamSundarVijayakumar/DCLoadManagementStrategies/blob/master/Desktop/Cloudsim/cloudsim-plus/src/main/java/centrlizedarchitecture/RequestAnalyserAndConfigurationManagerWebApplication.java)** for central architecture.
      
-##Genetic Algorithm (GA) fundamentals
+### Genetic Algorithm (GA) fundamentals
   - The GA is one of the evolutionary computation algorithms that is studied to have a
 robust stochastic search nature that works on the fundamental theory of Darwin’s natural
 selection.The functioning of the GA involves the following characteristics:
